@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // STATE MANAGEMENT
   // ==========================================================================
   let releaseNotes = [];
+  let lastFilteredNotes = [];
   let currentFilter = 'all';
   let searchQuery = '';
   
@@ -10,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // DOM ELEMENTS
   // ==========================================================================
   const refreshBtn = document.getElementById('refreshBtn');
+  const exportCsvBtn = document.getElementById('exportCsvBtn');
   const searchInput = document.getElementById('searchInput');
   const clearSearchBtn = document.getElementById('clearSearchBtn');
   const filterPills = document.querySelectorAll('.filter-pill');
@@ -45,6 +47,11 @@ document.addEventListener('DOMContentLoaded', () => {
   refreshBtn.addEventListener('click', () => {
     fetchReleaseNotes(true);
   });
+  
+  // Export CSV Button click
+  if (exportCsvBtn) {
+    exportCsvBtn.addEventListener('click', exportToCSV);
+  }
   
   // Search Input change
   searchInput.addEventListener('input', (e) => {
@@ -220,6 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
     
+    lastFilteredNotes = filtered;
     renderFeed(filtered);
   }
 
@@ -290,6 +298,10 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             
             <div class="card-actions">
+              <button class="btn-card-action copy-text-btn" title="Copy update text to clipboard">
+                <i data-lucide="copy"></i>
+                <span>Copy</span>
+              </button>
               <button class="btn-card-action share-tweet-btn" title="Tweet this update">
                 <i data-lucide="twitter"></i>
                 <span>Select & Tweet</span>
@@ -315,12 +327,36 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Click on card body to select as well for user convenience
         wrapper.querySelector('.update-card').addEventListener('click', (e) => {
-          // Prevent selecting when clicking hyperlinks
+          // Prevent selecting when clicking hyperlinks or actions
           if (e.target.tagName === 'A' || e.target.closest('a')) return;
           if (e.target.closest('.share-tweet-btn')) return;
+          if (e.target.closest('.copy-text-btn')) return;
           if (e.target.closest('.card-select-trigger')) return;
           
           triggerSelect();
+        });
+        
+        // Copy to clipboard action
+        const copyBtn = wrapper.querySelector('.copy-text-btn');
+        copyBtn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          try {
+            await navigator.clipboard.writeText(update.text_content);
+            
+            // Visual feedback
+            const btnSpan = copyBtn.querySelector('span');
+            btnSpan.textContent = 'Copied!';
+            copyBtn.style.color = 'var(--color-feature)';
+            
+            setTimeout(() => {
+              btnSpan.textContent = 'Copy';
+              copyBtn.style.color = '';
+            }, 1800);
+            
+          } catch (err) {
+            console.error('Failed to copy text:', err);
+            alert('Could not copy text to clipboard.');
+          }
         });
         
         // Share/Tweet button action
@@ -357,6 +393,58 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function showEmptyState(show) {
     emptyState.style.display = show ? 'flex' : 'none';
+  }
+
+  // ==========================================================================
+  // EXPORT TO CSV LOGIC
+  // ==========================================================================
+  function exportToCSV() {
+    if (!lastFilteredNotes || lastFilteredNotes.length === 0) {
+      alert('No data available to export.');
+      return;
+    }
+    
+    // CSV Header row
+    const csvRows = [['Date', 'Type', 'Update Content', 'Source Link']];
+    
+    lastFilteredNotes.forEach(entry => {
+      entry.updates.forEach(update => {
+        // Clean and escape double quotes for CSV values
+        const cleanContent = update.text_content.replace(/"/g, '""');
+        csvRows.push([
+          `"${entry.date}"`,
+          `"${update.type}"`,
+          `"${cleanContent}"`,
+          `"${entry.link}"`
+        ]);
+      });
+    });
+    
+    // Join values with commas and rows with newlines
+    const csvContent = csvRows.map(e => e.join(",")).join("\n");
+    
+    // Create download blob
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    
+    // Generate descriptive filename based on active filters
+    let filename = 'bigquery_release_notes';
+    if (currentFilter !== 'all') {
+      filename += `_${currentFilter.toLowerCase()}`;
+    }
+    if (searchQuery) {
+      // Escape non-alphanumeric chars
+      filename += `_search_${searchQuery.replace(/[^a-z0-9]/gi, '_').toLowerCase()}`;
+    }
+    filename += '.csv';
+    
+    link.setAttribute("download", filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   // ==========================================================================

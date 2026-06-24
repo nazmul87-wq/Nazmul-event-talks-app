@@ -600,6 +600,7 @@ body::before {
 .card-actions {
   display: flex;
   justify-content: flex-end;
+  gap: 0.5rem;
   border-top: 1px solid var(--border-color);
   padding-top: 1rem;
   margin-top: 0.5rem;
@@ -622,6 +623,11 @@ body::before {
 }
 
 .btn-card-action:hover {
+  color: var(--primary);
+  background: var(--primary-glow);
+}
+
+.btn-card-action.share-tweet-btn:hover {
   color: var(--twitter-blue);
   background: var(--twitter-glow);
 }
