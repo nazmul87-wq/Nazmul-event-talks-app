@@ -253,6 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     lastFilteredNotes = filtered;
+    updateCategoryCounts();
     renderFeed(filtered);
   }
 
@@ -404,6 +405,36 @@ document.addEventListener('DOMContentLoaded', () => {
       feedContainer.appendChild(dailySection);
     });
     
+    // Collapsible Cards Scan
+    const cardBodies = feedContainer.querySelectorAll('.card-body');
+    cardBodies.forEach(body => {
+      // 165px offers buffer for height
+      if (body.scrollHeight > 165) {
+        body.classList.add('card-body-collapsed');
+        
+        // Create Toggle Button
+        const toggleBtn = document.createElement('button');
+        toggleBtn.className = 'read-more-toggle';
+        toggleBtn.setAttribute('aria-expanded', 'false');
+        toggleBtn.innerHTML = `
+          <span>Read More</span>
+          <i data-lucide="chevron-down"></i>
+        `;
+        
+        // Insert toggle button before card-actions (which is next sibling in DOM)
+        const cardActions = body.nextElementSibling;
+        body.parentNode.insertBefore(toggleBtn, cardActions);
+        
+        toggleBtn.addEventListener('click', (e) => {
+          e.stopPropagation(); // prevent card selection when expanding/collapsing
+          const isCollapsed = body.classList.toggle('card-body-collapsed');
+          toggleBtn.classList.toggle('expanded', !isCollapsed);
+          toggleBtn.setAttribute('aria-expanded', !isCollapsed ? 'true' : 'false');
+          toggleBtn.querySelector('span').textContent = isCollapsed ? 'Read More' : 'Read Less';
+        });
+      }
+    });
+
     // Reinforce lucide icons
     lucide.createIcons();
   }
@@ -418,6 +449,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function showEmptyState(show) {
     emptyState.style.display = show ? 'flex' : 'none';
+  }
+
+  // ==========================================================================
+  // CATEGORY COUNTS (DYNAMIC PILLS)
+  // ==========================================================================
+  function updateCategoryCounts() {
+    let allCount = 0;
+    let featureCount = 0;
+    let changeCount = 0;
+    let deprecationCount = 0;
+    
+    releaseNotes.forEach(entry => {
+      entry.updates.forEach(update => {
+        const textToSearch = `${update.type} ${update.text_content} ${entry.date}`.toLowerCase();
+        const matchesSearch = !searchQuery || textToSearch.includes(searchQuery);
+        
+        if (matchesSearch) {
+          allCount++;
+          const type = update.type.toLowerCase();
+          if (type === 'feature') featureCount++;
+          else if (type === 'change') changeCount++;
+          else if (type === 'deprecation') deprecationCount++;
+        }
+      });
+    });
+    
+    const countAllEl = document.getElementById('count-all');
+    const countFeatureEl = document.getElementById('count-feature');
+    const countChangeEl = document.getElementById('count-change');
+    const countDeprecationEl = document.getElementById('count-deprecation');
+    
+    if (countAllEl) countAllEl.textContent = allCount;
+    if (countFeatureEl) countFeatureEl.textContent = featureCount;
+    if (countChangeEl) countChangeEl.textContent = changeCount;
+    if (countDeprecationEl) countDeprecationEl.textContent = deprecationCount;
   }
 
   // ==========================================================================

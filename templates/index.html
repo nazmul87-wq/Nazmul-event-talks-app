@@ -63,15 +63,24 @@
       <div class="filter-wrapper">
         <span class="filter-label">Filter by type:</span>
         <div class="filter-pills" role="radiogroup" aria-label="Filter release notes by category">
-          <button class="filter-pill active" data-filter="all" role="radio" aria-checked="true">All Updates</button>
+          <button class="filter-pill active" data-filter="all" role="radio" aria-checked="true">
+            <span>All Updates</span>
+            <span class="pill-count" id="count-all">0</span>
+          </button>
           <button class="filter-pill" data-filter="Feature" role="radio" aria-checked="false">
-            <span class="dot dot-feature"></span> Features
+            <span class="dot dot-feature"></span>
+            <span>Features</span>
+            <span class="pill-count" id="count-feature">0</span>
           </button>
           <button class="filter-pill" data-filter="Change" role="radio" aria-checked="false">
-            <span class="dot dot-change"></span> Changes
+            <span class="dot dot-change"></span>
+            <span>Changes</span>
+            <span class="pill-count" id="count-change">0</span>
           </button>
           <button class="filter-pill" data-filter="Deprecation" role="radio" aria-checked="false">
-            <span class="dot dot-deprecation"></span> Deprecations
+            <span class="dot dot-deprecation"></span>
+            <span>Deprecations</span>
+            <span class="pill-count" id="count-deprecation">0</span>
           </button>
         </div>
       </div>
