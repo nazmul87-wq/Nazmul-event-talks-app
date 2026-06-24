@@ -28,7 +28,17 @@
         </div>
       </div>
       
-      <div class="action-group" style="display: flex; gap: 0.75rem;">
+      <div class="action-group" style="display: flex; align-items: center; gap: 1rem;">
+        <!-- Theme Toggle Switch -->
+        <div class="theme-toggle-wrapper" title="Toggle Light/Dark Theme">
+          <i data-lucide="moon" class="theme-icon theme-icon-moon"></i>
+          <label class="theme-switch" for="themeCheckbox">
+            <input type="checkbox" id="themeCheckbox" aria-label="Toggle light/dark theme">
+            <span class="theme-slider"></span>
+          </label>
+          <i data-lucide="sun" class="theme-icon theme-icon-sun"></i>
+        </div>
+        
         <button id="exportCsvBtn" class="btn btn-secondary" title="Export visible notes to CSV">
           <i data-lucide="download"></i>
           <span>Export CSV</span>

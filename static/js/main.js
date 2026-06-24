@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const searchInput = document.getElementById('searchInput');
   const clearSearchBtn = document.getElementById('clearSearchBtn');
   const filterPills = document.querySelectorAll('.filter-pill');
+  const themeCheckbox = document.getElementById('themeCheckbox');
   
   const initialLoader = document.getElementById('initialLoader');
   const feedContainer = document.getElementById('feedContainer');
@@ -37,6 +38,30 @@ document.addEventListener('DOMContentLoaded', () => {
   if (progressCircle) {
     progressCircle.style.strokeDasharray = `${circleCircumference} ${circleCircumference}`;
     progressCircle.style.strokeDashoffset = circleCircumference;
+  }
+
+  // ==========================================================================
+  // THEME MANAGEMENT (Light / Dark Mode)
+  // ==========================================================================
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  if (savedTheme === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+    if (themeCheckbox) themeCheckbox.checked = true;
+  } else {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    if (themeCheckbox) themeCheckbox.checked = false;
+  }
+
+  if (themeCheckbox) {
+    themeCheckbox.addEventListener('change', (e) => {
+      if (e.target.checked) {
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('theme', 'light');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+      }
+    });
   }
 
   // ==========================================================================
